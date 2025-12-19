@@ -45,10 +45,7 @@ $ sudo apt-get install openmpi-bin openmpi-common openssh-client openssh-server 
 After compiling and installing ARGoS. 
 From the neat directory, you need to type the following commands to build everything:
 ```bash
-$ mkdir build
-$ cd build
-$ cmake ../
-$ make
+$ catkin_make
 $ cd ..
 ```
 
