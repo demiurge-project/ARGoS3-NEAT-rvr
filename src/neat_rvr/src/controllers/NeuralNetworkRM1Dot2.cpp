@@ -40,6 +40,7 @@ void NeuralNetworkRM1Dot2::Init(TConfigurationNode& t_node) {
   m_cWheelActuationRange.Set(-m_pcRobotState->GetMaxVelocity(), m_pcRobotState->GetMaxVelocity());
 
   m_cNeuralNetworkOutputRange.Set(0.0f, 1.0f);
+  m_pcRobotState->InitROS();
 }
 
 /****************************************/
@@ -48,6 +49,7 @@ void NeuralNetworkRM1Dot2::Init(TConfigurationNode& t_node) {
 
 void NeuralNetworkRM1Dot2::ControlStep() {
    // Get Proximity sensory data.
+   ros::spinOnce();
    if(m_pcProximity != NULL) {
       const CCI_RVRProximitySensor::TReadings& cProxiReadings = m_pcProximity->GetReadings();
       // Feed readings to RVRDAO which will process them as needed
@@ -70,7 +72,7 @@ void NeuralNetworkRM1Dot2::ControlStep() {
    // Get "Light" sensory data (simulated by camera).
    if(m_pcOmnidirectionalCamera != NULL) {
       const CCI_RVRColoredBlobOmnidirectionalCameraSensor::SReadings& cLightReadings = m_pcOmnidirectionalCamera->GetReadings();
-		m_pcRobotState->SetOmnidirectionalCameraInput(cLightReadings);
+      m_pcRobotState->SetOmnidirectionalCameraInput(cLightReadings);
       CCI_RVRLidarSensor::SReading cProcessedLightReading = m_pcRobotState->GetAttractionVectorToBeacons();
       CVector2 cLightReading = CVector2(cProcessedLightReading.Value, cProcessedLightReading.Angle);
       for(size_t i=4; i<8; i++) {
@@ -104,7 +106,7 @@ void NeuralNetworkRM1Dot2::ControlStep() {
   // Get Lidar sensory data (RAB).
    if(m_pcLidar != NULL) {
       const CCI_RVRLidarSensor::TReadings& cRABReadings = m_pcLidar->GetReadings();
-		m_pcRobotState->SetLidarInput(cRABReadings);
+      m_pcRobotState->SetLidarInput(cRABReadings);
 
       CCI_RVRLidarSensor::SReading cProcessedRabReading = m_pcRobotState->GetAttractionVectorToNeighbors(1.0);   // alpha = 1 (artbitrary value)
       CVector2 cRabReading = CVector2(cProcessedRabReading.Value, cProcessedRabReading.Angle);
@@ -137,6 +139,7 @@ void NeuralNetworkRM1Dot2::ControlStep() {
 
    if(m_pcWheels != NULL) {
       m_pcWheels->SetLinearVelocity(m_fLeftSpeed, m_fRightSpeed);
+      m_pcRobotState->SetWheelsVelocity(m_fLeftSpeed, m_fRightSpeed);
    }
 
    m_unTimeStep++;
